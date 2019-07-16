@@ -165,7 +165,8 @@
             /*
             --------------------COURSE A---------------------
             */
-            this.coordAA = [118, 185, 331, 554, 799, 976, 1183, 1283, 1384, 1420, 1444, 1445, 1419, 1328, 1119, 765, 477,
+            this.coordAA = [118, 185, 331, 554, 799, 976, 1183, 1283, 1384, 1420, 1444, 1445, 1419, 1328, 1119, 765,
+                477,
                 301, 138, 108, 94,
                 130, 77, 68, 69, 67, 72, 80, 74, 93, 178, 318, 509, 650, 686, 685, 684, 674, 660, 603, 444, 258
             ];
@@ -206,14 +207,16 @@
                     for (var hj = 0; hj <= this.linePos.length; hj +=
                         4) { //Goes through four direction collision for a particular coordAA Line
                         this.colA[directNum] = collideLineLine(this.linePos[hj - 4], this.linePos[hj - 3], this
-                            .linePos[hj - 2], this.linePos[hj - 1], this.coordAA[i], this.coordAA[i + this.coordAA
+                            .linePos[hj - 2], this.linePos[hj - 1], this.coordAA[i], this.coordAA[i + this
+                                .coordAA
                                 .length / 2], this.coordAA[i + fix], this.coordAA[i + this.coordAA.length / 2 +
                                 fix]);
                         directNum++;
                     }
                     if (moveRate > 0.0001 || moveRate < -0.0001) {
                         if (this.colA[0] || this.colA[1]) { //Quik Maff (Working as intended)
-                            var mY = (this.coordAA[i + this.coordAA.length / 2 + fix] - this.coordAA[i + this.coordAA
+                            var mY = (this.coordAA[i + this.coordAA.length / 2 + fix] - this.coordAA[i + this
+                                .coordAA
                                 .length / 2]) / (this.coordAA[i + fix] - this.coordAA[i]);
                             var bY = this.coordAA[i + this.coordAA.length / 2] - (mY * this.coordAA[i]);
                             var xY = Math.floor(carX); //x can be whatever, its undefined slope
@@ -222,12 +225,14 @@
                             point(xY, yY);
                             if (carY - this.borderPadding - moveRate < yY && this.colA[0] && !(this.colA[1])) {
                                 carY = yY + this.borderPadding;
-                            } else if (carY + this.borderPadding + moveRate > yY && this.colA[1] && !(this.colA[0])) {
+                            } else if (carY + this.borderPadding + moveRate > yY && this.colA[1] && !(this.colA[
+                                0])) {
                                 carY = yY - this.borderPadding;
                             }
                         }
                         if (this.colA[2] || this.colA[3]) {
-                            var mX = (this.coordAA[i + this.coordAA.length / 2 + fix] - this.coordAA[i + this.coordAA
+                            var mX = (this.coordAA[i + this.coordAA.length / 2 + fix] - this.coordAA[i + this
+                                .coordAA
                                 .length / 2]) / (this.coordAA[i + fix] - this.coordAA[i]);
                             var bX = this.coordAA[i + this.coordAA.length / 2] - (mX * this.coordAA[i]);
                             var xX = (carY - bX) / mX; //Finding X using Algaebrah
@@ -236,14 +241,15 @@
                             point(xX, yX);
                             if (carX - this.borderPadding - moveRate < xX && this.colA[2] && !(this.colA[3])) {
                                 carX = xX + this.borderPadding;
-                            } else if (carX + this.borderPadding + moveRate > xX && this.colA[3] && !(this.colA[2])) {
+                            } else if (carX + this.borderPadding + moveRate > xX && this.colA[3] && !(this.colA[
+                                2])) {
                                 carX = xX - this.borderPadding;
                             }
                         }
                     }
                 }
                 //---------------------
-                for (var ii = 0; ii < this.coordAB.length/ 2; ii++) {
+                for (var ii = 0; ii < this.coordAB.length / 2; ii++) {
                     var fix = 1;
                     var directNum = -1;
                     if (ii >= this.coordAB.length / 2 - 1) {
@@ -252,14 +258,17 @@
                     for (var mj = 0; mj <= this.linePos.length; mj +=
                         4) { //Goes through four direction collision for a particular coordAB Line
                         this.colA[directNum] = collideLineLine(this.linePos[mj - 4], this.linePos[mj - 3], this
-                            .linePos[mj - 2], this.linePos[mj - 1], this.coordAB[ii], this.coordAB[ii + this.coordAB
-                                .length / 2], this.coordAB[ii + fix], this.coordAB[ii + this.coordAB.length / 2 +
+                            .linePos[mj - 2], this.linePos[mj - 1], this.coordAB[ii], this.coordAB[ii + this
+                                .coordAB
+                                .length / 2], this.coordAB[ii + fix], this.coordAB[ii + this.coordAB.length /
+                                2 +
                                 fix]);
                         directNum++;
                     }
                     if (moveRate > 0.0001 || moveRate < -0.0001) {
                         if (this.colA[0] || this.colA[1]) { //Quik Maff (Working as intended)
-                            var mY = (this.coordAB[ii + this.coordAB.length / 2 + fix] - this.coordAB[ii + this.coordAB
+                            var mY = (this.coordAB[ii + this.coordAB.length / 2 + fix] - this.coordAB[ii + this
+                                .coordAB
                                 .length / 2]) / (this.coordAB[ii + fix] - this.coordAB[ii]);
                             var bY = this.coordAB[ii + this.coordAB.length / 2] - (mY * this.coordAB[ii]);
                             var xY = Math.floor(carX); //x can be whatever, its undefined slope
@@ -268,12 +277,14 @@
                             point(xY, yY);
                             if (carY - this.borderPadding - moveRate < yY && this.colA[0] && !(this.colA[1])) {
                                 carY = yY + this.borderPadding;
-                            } else if (carY + this.borderPadding + moveRate > yY && this.colA[1] && !(this.colA[0])) {
+                            } else if (carY + this.borderPadding + moveRate > yY && this.colA[1] && !(this.colA[
+                                0])) {
                                 carY = yY - this.borderPadding;
                             }
                         }
                         if (this.colA[2] || this.colA[3]) {
-                            var mX = (this.coordAB[ii + this.coordAB.length / 2 + fix] - this.coordAB[ii + this.coordAB
+                            var mX = (this.coordAB[ii + this.coordAB.length / 2 + fix] - this.coordAB[ii + this
+                                .coordAB
                                 .length / 2]) / (this.coordAB[ii + fix] - this.coordAB[ii]);
                             var bX = this.coordAB[ii + this.coordAB.length / 2] - (mX * this.coordAB[ii]);
                             var xX = (carY - bX) / mX; //Finding X using Algaebrah
@@ -282,7 +293,8 @@
                             point(xX, yX);
                             if (carX - this.borderPadding - moveRate < xX && this.colA[2] && !(this.colA[3])) {
                                 carX = xX + this.borderPadding;
-                            } else if (carX + this.borderPadding + moveRate > xX && this.colA[3] && !(this.colA[2])) {
+                            } else if (carX + this.borderPadding + moveRate > xX && this.colA[3] && !(this.colA[
+                                2])) {
                                 carX = xX - this.borderPadding;
                             }
                         }
@@ -292,6 +304,43 @@
             /*
             --------------------COURSE A---------------------
             */
+        }
+
+
+
+        //========================================================
+        var key;
+        var exitA = false;
+        var exitB = false;
+        var exitC = false;
+
+        function exitFuncD(event) {
+            key = event.keyCode;
+            if (key === 53) {
+                exitA = true;
+            }
+            if (key === 56) {
+                exitB = true;
+            }
+            if (key === 48) {
+                exitC = true;
+            }
+            if (exitA && exitB && exitC) {
+                location.href = "https://thezooo.github.io";
+            }
+        }
+
+        function exitFuncU(event) {
+            key = event.keyCode;
+            if (key === 53) {
+                exitA = false;
+            }
+            if (key === 56) {
+                exitB = false;
+            }
+            if (key === 48) {
+                exitC = false;
+            }
         }
     </script>
     <style>
@@ -308,7 +357,7 @@
     </style>
 </head>
 
-<body>
+<body onkeydown="exitFuncD(event)" onkeyup="exitFuncU(event)">
     <p id="dump"></p>
     <p id="coord"></p>
 </body>
