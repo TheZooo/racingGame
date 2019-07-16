@@ -1,0 +1,316 @@
+<html>
+
+<head>
+    <script src="p5/p5.min.js"></script>
+    <script src="p5/p5.collide2d.min.js"></script>
+    <script>
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+        var carX = 200;
+        var carY = 200;
+        var carW = 5;
+        var carH = 5;
+        //---------------------
+        var movementChng = 0.01;
+        var moveDegrade = 0.23;
+        var moveX = 0;
+        var moveY = 0;
+        var moveRate = 0;
+        var moveMax = 0.2;
+        var moveMin = -0.2;
+        var moveInc = 0;
+        var moveIncMax = 5;
+        //----------------------
+        var radius = 50;
+        var ang = 0;
+        //----------------------
+        var turnChng = 0.01;
+        var turnDegrade = 0.5;
+        var turnRate = 0;
+        var turnRateMax = 0.05;
+        var turnRateMin = -0.05;
+        var turnInc = 0;
+        var turnIncMax = 2;
+        var keys = [false, false, false, false]; //LEFT, UP, RIGHT, DOWN
+        //----------------------
+        var course = new course();
+
+        function setup() {
+            createCanvas(w, h);
+        }
+
+        function draw() {
+            if (keys[0] || keys[2]) { //TURNING MECHINISM
+                if (turnInc >= turnIncMax) {
+                    turnInc = 0;
+                    if (keys[0] && turnRate > turnRateMin) {
+                        turnRate -= turnChng;
+                    }
+                    if (keys[2] && turnRate < turnRateMax) {
+                        turnRate += turnChng;
+                    }
+                } else if (turnInc < turnIncMax) {
+                    turnInc++;
+                }
+            } else if (turnRate > 0.0001 || turnRate < -0.0001) {
+                if (turnInc >= turnIncMax) {
+                    turnInc = 0;
+                    if (turnRate > 0) {
+                        turnRate -= Math.abs(turnRate * turnDegrade);
+                    }
+                    if (turnRate < 0) {
+                        turnRate += Math.abs(turnRate * turnDegrade);
+                    }
+                } else if (turnInc < turnIncMax) {
+                    turnInc++;
+                }
+            }
+            ang += Number(turnRate.toFixed(2));
+            //------------------------------------------------------------------------------
+            if (keys[1] || keys[3]) { //MOVING MECHINISM
+                if (moveInc >= moveIncMax) {
+                    moveInc = 0;
+                    if (keys[1] && moveRate < moveMax) {
+                        moveRate += movementChng;
+                    }
+                    if (keys[3] && moveRate > moveMin) {
+                        moveRate -= movementChng;
+                    }
+                } else if (moveInc < moveIncMax) {
+                    moveInc++;
+                }
+            } else if (moveRate > 0.0001 || moveRate < -0.0001) {
+                if (moveInc >= moveIncMax) {
+                    moveInc = 0;
+                    if (moveRate > 0) {
+                        moveRate -= Math.abs(moveRate * moveDegrade);
+                    }
+                    if (moveRate < 0) {
+                        moveRate += Math.abs(moveRate * moveDegrade);
+                    }
+                } else if (moveInc < moveIncMax) {
+                    moveInc++;
+                }
+            }
+            moveX = (Math.abs((carX + cos(ang) * radius / 2)) - carX) * moveRate;
+            moveY = (Math.abs((carY + sin(ang) * radius / 2)) - carY) * moveRate;
+            carX += Number(moveX.toFixed(2));
+            carY += Number(moveY.toFixed(2));
+            //------------------------------------------------------------------------------
+            background(220);
+
+            course.showA();
+            course.collisionA();
+
+            fill(255, 10, 10);
+            stroke(0);
+            strokeWeight(1);
+            ellipse(carX, carY, carW, carH);
+
+            noFill();
+            ellipse(carX, carY, radius);
+
+            stroke(0, 0, 0, 50);
+            line(carX, carY, carX + cos(ang) * radius / 2, carY + sin(ang) * radius / 2);
+
+            strokeWeight(3);
+            stroke(255, 10, 10);
+            point(carX + cos(ang) * radius / 2, carY + sin(ang) * radius / 2);
+
+            document.getElementById('dump').innerHTML = keys + " " + turnRate + " " + moveRate;
+        }
+
+        function keyPressed() {
+            if (keyCode === 68) { //Right
+                keys[2] = true;
+                keys[0] = false;
+            }
+            if (keyCode === 65) { //Left
+                keys[2] = false;
+                keys[0] = true;
+            }
+            if (keyCode === 87) { //Up
+                keys[1] = true;
+                keys[3] = false;
+            }
+            if (keyCode === 83) { //Down
+                keys[1] = false;
+                keys[3] = true;
+            }
+        }
+
+        function keyReleased() {
+            if (keyCode === 68) { //Right
+                keys[2] = false;
+            }
+            if (keyCode === 65) { //Left
+                keys[0] = false;
+            }
+            if (keyCode === 87) { //Up
+                keys[1] = false;
+            }
+            if (keyCode === 83) { //Down
+                keys[3] = false;
+            }
+        }
+
+        function course() {
+            /*
+            NOTE: ADJACENT X COORDINATES MUST NOT BE THE SAME
+            The equation used will make 0/y and will show up as NaN
+            */
+            this.linePos = [];
+            this.dotStrokeWeight = 10;
+            this.borderPadding = 10;
+            /*
+            --------------------COURSE A---------------------
+            */
+            this.coordAA = [118, 185, 331, 554, 799, 976, 1183, 1283, 1384, 1420, 1444, 1445, 1419, 1328, 1119, 765, 477,
+                301, 138, 108, 94,
+                130, 77, 68, 69, 67, 72, 80, 74, 93, 178, 318, 509, 650, 686, 685, 684, 674, 660, 603, 444, 258
+            ];
+            this.colA = [false, false, false, false]; //Above, Below, Left, Right
+            this.coordAB = [308, 372, 509, 707, 865, 1084, 1144, 1185, 1149, 1003, 757, 554, 411, 348, 238, 190, 192,
+                194, 190, 186, 262, 351, 487, 509, 514, 502, 458, 394
+            ];
+            this.showA = function () {
+                noFill();
+                strokeWeight(10);
+                beginShape();
+                for (var i = 0; i < this.coordAA.length / 2; i++) {
+                    vertex(this.coordAA[i], this.coordAA[i + this.coordAA.length / 2]);
+                }
+                endShape(CLOSE);
+                beginShape();
+                for (var ii = 0; ii < this.coordAB.length / 2; ii++) {
+                    vertex(this.coordAB[ii], this.coordAB[ii + this.coordAB.length / 2]);
+                }
+                endShape(CLOSE);
+            }
+            this.collisionA = function () {
+                this.linePos = [carX, 0, carX, carY, carX, carY, carX, h, 0, carY, carX, carY, carX, carY, w,
+                    carY
+                ]; //Above, below, left, right every 4 sets
+                stroke(0, 0, 0, 80);
+                strokeWeight(1);
+                for (var n = 0; n <= this.linePos.length; n += 4) { //Line Display
+                    line(this.linePos[n - 4], this.linePos[n - 3], this.linePos[n - 2], this.linePos[n - 1]);
+                }
+                //------------------
+                for (var i = 0; i < this.coordAA.length / 2; i++) { //Goes through coordinates in coordAA
+                    var fix = 1;
+                    var directNum = -1;
+                    if (i >= this.coordAA.length / 2 - 1) {
+                        fix = -(this.coordAA.length / 2) + 1;
+                    }
+                    for (var hj = 0; hj <= this.linePos.length; hj +=
+                        4) { //Goes through four direction collision for a particular coordAA Line
+                        this.colA[directNum] = collideLineLine(this.linePos[hj - 4], this.linePos[hj - 3], this
+                            .linePos[hj - 2], this.linePos[hj - 1], this.coordAA[i], this.coordAA[i + this.coordAA
+                                .length / 2], this.coordAA[i + fix], this.coordAA[i + this.coordAA.length / 2 +
+                                fix]);
+                        directNum++;
+                    }
+                    if (moveRate > 0.0001 || moveRate < -0.0001) {
+                        if (this.colA[0] || this.colA[1]) { //Quik Maff (Working as intended)
+                            var mY = (this.coordAA[i + this.coordAA.length / 2 + fix] - this.coordAA[i + this.coordAA
+                                .length / 2]) / (this.coordAA[i + fix] - this.coordAA[i]);
+                            var bY = this.coordAA[i + this.coordAA.length / 2] - (mY * this.coordAA[i]);
+                            var xY = Math.floor(carX); //x can be whatever, its undefined slope
+                            var yY = (mY * xY) + bY;
+                            strokeWeight(this.dotStrokeWeight);
+                            point(xY, yY);
+                            if (carY - this.borderPadding - moveRate < yY && this.colA[0] && !(this.colA[1])) {
+                                carY = yY + this.borderPadding;
+                            } else if (carY + this.borderPadding + moveRate > yY && this.colA[1] && !(this.colA[0])) {
+                                carY = yY - this.borderPadding;
+                            }
+                        }
+                        if (this.colA[2] || this.colA[3]) {
+                            var mX = (this.coordAA[i + this.coordAA.length / 2 + fix] - this.coordAA[i + this.coordAA
+                                .length / 2]) / (this.coordAA[i + fix] - this.coordAA[i]);
+                            var bX = this.coordAA[i + this.coordAA.length / 2] - (mX * this.coordAA[i]);
+                            var xX = (carY - bX) / mX; //Finding X using Algaebrah
+                            var yX = (mX * xX) + bX;
+                            strokeWeight(this.dotStrokeWeight);
+                            point(xX, yX);
+                            if (carX - this.borderPadding - moveRate < xX && this.colA[2] && !(this.colA[3])) {
+                                carX = xX + this.borderPadding;
+                            } else if (carX + this.borderPadding + moveRate > xX && this.colA[3] && !(this.colA[2])) {
+                                carX = xX - this.borderPadding;
+                            }
+                        }
+                    }
+                }
+                //---------------------
+                for (var ii = 0; ii < this.coordAB.length/ 2; ii++) {
+                    var fix = 1;
+                    var directNum = -1;
+                    if (ii >= this.coordAB.length / 2 - 1) {
+                        fix = -(this.coordAB.length / 2 - 1);
+                    }
+                    for (var mj = 0; mj <= this.linePos.length; mj +=
+                        4) { //Goes through four direction collision for a particular coordAB Line
+                        this.colA[directNum] = collideLineLine(this.linePos[mj - 4], this.linePos[mj - 3], this
+                            .linePos[mj - 2], this.linePos[mj - 1], this.coordAB[ii], this.coordAB[ii + this.coordAB
+                                .length / 2], this.coordAB[ii + fix], this.coordAB[ii + this.coordAB.length / 2 +
+                                fix]);
+                        directNum++;
+                    }
+                    if (moveRate > 0.0001 || moveRate < -0.0001) {
+                        if (this.colA[0] || this.colA[1]) { //Quik Maff (Working as intended)
+                            var mY = (this.coordAB[ii + this.coordAB.length / 2 + fix] - this.coordAB[ii + this.coordAB
+                                .length / 2]) / (this.coordAB[ii + fix] - this.coordAB[ii]);
+                            var bY = this.coordAB[ii + this.coordAB.length / 2] - (mY * this.coordAB[ii]);
+                            var xY = Math.floor(carX); //x can be whatever, its undefined slope
+                            var yY = (mY * xY) + bY;
+                            strokeWeight(this.dotStrokeWeight);
+                            point(xY, yY);
+                            if (carY - this.borderPadding - moveRate < yY && this.colA[0] && !(this.colA[1])) {
+                                carY = yY + this.borderPadding;
+                            } else if (carY + this.borderPadding + moveRate > yY && this.colA[1] && !(this.colA[0])) {
+                                carY = yY - this.borderPadding;
+                            }
+                        }
+                        if (this.colA[2] || this.colA[3]) {
+                            var mX = (this.coordAB[ii + this.coordAB.length / 2 + fix] - this.coordAB[ii + this.coordAB
+                                .length / 2]) / (this.coordAB[ii + fix] - this.coordAB[ii]);
+                            var bX = this.coordAB[ii + this.coordAB.length / 2] - (mX * this.coordAB[ii]);
+                            var xX = (carY - bX) / mX; //Finding X using Algaebrah
+                            var yX = (mX * xX) + bX;
+                            strokeWeight(this.dotStrokeWeight);
+                            point(xX, yX);
+                            if (carX - this.borderPadding - moveRate < xX && this.colA[2] && !(this.colA[3])) {
+                                carX = xX + this.borderPadding;
+                            } else if (carX + this.borderPadding + moveRate > xX && this.colA[3] && !(this.colA[2])) {
+                                carX = xX - this.borderPadding;
+                            }
+                        }
+                    }
+                }
+            }
+            /*
+            --------------------COURSE A---------------------
+            */
+        }
+    </script>
+    <style>
+        body {
+            overflow: hidden;
+        }
+
+        canvas {
+            z-index: -1;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <p id="dump"></p>
+    <p id="coord"></p>
+</body>
+
+</html>
