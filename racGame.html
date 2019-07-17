@@ -4,10 +4,12 @@
     <script src="p5/p5.min.js"></script>
     <script src="p5/p5.collide2D.min.js"></script>
     <script>
+        var d = document;
         var w = window.innerWidth;
         var h = window.innerHeight;
-        var carX = 100;
-        var carY = 100;
+        //--------------------
+        var carX = 50;
+        var carY = 50;
         var carW = 5;
         var carH = 5;
         //---------------------
@@ -35,8 +37,25 @@
         var turnIncMax = 2;
         var keys = [false, false, false, false, false]; //LEFT, UP, RIGHT, DOWN
         //----------------------
+        var countDown = 3;
+        var countDownInc = 0;
+        var countDownIncMax = 100;
+        var fraSec = 0;
+        var sec = 0;
+        var minn = 0;
         var courseSelect = 0;
+        var lap = 0;
+        var lapMax = 3;
+        var isCourseStart = false;
         var isHelperActive = true;
+        var quickTrigger = true;
+        var mouseHelp = ["Left click to start this course", "Timer/Countdown is on your mouse",
+            "WASD to move and hit space to slam the brakes", "Try to get a fast time",
+            "You can press o to disable the extra graphics"
+        ];
+        var mouseCycle = 0;
+        var mouseInc = 0;
+        var mouseIncMax = 120;
         //----------------------
         var course = new course();
 
@@ -45,79 +64,139 @@
         }
 
         function draw() {
-            if (keys[0] || keys[2]) { //TURNING MECHINISM
-                if (turnInc >= turnIncMax) {
-                    turnInc = 0;
-                    if (keys[0] && turnRate > turnRateMin) {
-                        turnRate -= turnChng;
-                    }
-                    if (keys[2] && turnRate < turnRateMax) {
-                        turnRate += turnChng;
-                    }
-                } else if (turnInc < turnIncMax) {
-                    turnInc++;
+            d.getElementById('time').style.top = mouseY;
+            d.getElementById('time').style.left = mouseX;
+            if (!(isCourseStart)) {
+                if (mouseInc >= mouseIncMax) {
+                    mouseCycle++;
+                    mouseInc = 0;
+                } else if (mouseInc < mouseIncMax) {
+                    mouseInc++;
                 }
-            } else if (turnRate > 0.0001 || turnRate < -0.0001) {
-                if (turnInc >= turnIncMax) {
-                    turnInc = 0;
-                    if (turnRate > 0) {
-                        turnRate -= Math.abs(turnRate * turnDegrade);
-                    }
-                    if (turnRate < 0) {
-                        turnRate += Math.abs(turnRate * turnDegrade);
-                    }
-                } else if (turnInc < turnIncMax) {
-                    turnInc++;
+                if (mouseCycle >= mouseHelp.length) {
+                    mouseCycle = 0;
                 }
+                d.getElementById('time').innerHTML = mouseHelp[mouseCycle];
+            } else {
+                mouseInc = 0;
             }
-            ang += Number(turnRate.toFixed(2));
-            if (ang > 6.2) {
-                ang = 0;
-            } else if (ang < 0) {
-                ang = 6.2;
-            }
-            //------------------------------------------------------------------------------
-            if (keys[1] || keys[3]) { //MOVING MECHINISM
-                if (moveInc >= moveIncMax) {
-                    moveInc = 0;
-                    if (keys[1] && moveRate < moveMax) {
-                        moveRate += movementChng;
-                    }
-                    if (keys[3] && moveRate > moveMin) {
-                        moveRate -= movementChng;
-                    }
-                } else if (moveInc < moveIncMax) {
-                    moveInc++;
+
+            if (isCourseStart) {
+                if (countDown > 0) {
+                    d.getElementById('time').innerHTML = countDown;
                 }
-            } else if (moveRate > 0.0001 || moveRate < -0.0001) {
-                if (moveInc >= moveIncMax) {
-                    moveInc = 0;
+                if (countDownInc >= countDownIncMax && countDown > 0) {
+                    countDown--;
+                    countDownInc = 0;
+                } else if (countDownInc < countDownIncMax) {
+                    countDownInc++;
+                }
+                if (countDown === 0) {
+                    if (lap === lapMax) {
+                        d.getElementById('time').innerHTML = minn + ":" + sec + ":" + fraSec + " " +
+                            "Left Click to Restart";
+                    } else if (lap !== lapMax) {
+                        d.getElementById('time').innerHTML = minn + ":" + sec + ":" + fraSec;
+                        fraSec++;
+                        if (fraSec > 60) {
+                            sec++;
+                            fraSec = 0;
+                        }
+                        if (sec > 60) {
+                            minn++;
+                            sec = 0;
+                        }
+                    }
+                }
+            } else {
+                countDownInc = 0;
+                countDown = 3;
+                fraSec = 0;
+                sec = 0;
+                minn = 0;
+            }
+
+            if (countDown <= 0) {
+                if (keys[0] || keys[2]) { //TURNING MECHINISM
+                    if (turnInc >= turnIncMax) {
+                        turnInc = 0;
+                        if (keys[0] && turnRate > turnRateMin) {
+                            turnRate -= turnChng;
+                        }
+                        if (keys[2] && turnRate < turnRateMax) {
+                            turnRate += turnChng;
+                        }
+                    } else if (turnInc < turnIncMax) {
+                        turnInc++;
+                    }
+                } else if (turnRate > 0.0001 || turnRate < -0.0001) {
+                    if (turnInc >= turnIncMax) {
+                        turnInc = 0;
+                        if (turnRate > 0) {
+                            turnRate -= Math.abs(turnRate * turnDegrade);
+                        }
+                        if (turnRate < 0) {
+                            turnRate += Math.abs(turnRate * turnDegrade);
+                        }
+                    } else if (turnInc < turnIncMax) {
+                        turnInc++;
+                    }
+                }
+                ang += Number(turnRate.toFixed(2));
+                if (ang > 6.2) {
+                    ang = 0;
+                } else if (ang < 0) {
+                    ang = 6.2;
+                }
+                //------------------------------------------------------------------------------
+                if (keys[1] || keys[3]) { //MOVING MECHINISM
+                    if (moveInc >= moveIncMax) {
+                        moveInc = 0;
+                        if (keys[1] && moveRate < moveMax) {
+                            moveRate += movementChng;
+                        }
+                        if (keys[3] && moveRate > moveMin) {
+                            moveRate -= movementChng;
+                        }
+                    } else if (moveInc < moveIncMax) {
+                        moveInc++;
+                    }
+                } else if (moveRate > 0.0001 || moveRate < -0.0001) {
+                    if (moveInc >= moveIncMax) {
+                        moveInc = 0;
+                        if (moveRate > 0) {
+                            moveRate -= Math.abs(moveRate * moveDegrade);
+                        }
+                        if (moveRate < 0) {
+                            moveRate += Math.abs(moveRate * moveDegrade);
+                        }
+                    } else if (moveInc < moveIncMax) {
+                        moveInc++;
+                    }
+                }
+                if (keys[4]) {
                     if (moveRate > 0) {
-                        moveRate -= Math.abs(moveRate * moveDegrade);
+                        moveRate -= Math.abs(moveRate * moveBrake);
                     }
                     if (moveRate < 0) {
-                        moveRate += Math.abs(moveRate * moveDegrade);
+                        moveRate += Math.abs(moveRate * moveBrake);
                     }
-                } else if (moveInc < moveIncMax) {
-                    moveInc++;
                 }
+                moveX = (Math.abs((carX + cos(ang) * radius / radMulti)) - carX) * moveRate;
+                moveY = (Math.abs((carY + sin(ang) * radius / radMulti)) - carY) * moveRate;
+                carX += Number(moveX.toFixed(2));
+                carY += Number(moveY.toFixed(2));
             }
-            if (keys[4]) {
-                if (moveRate > 0) {
-                    moveRate -= Math.abs(moveRate * moveBrake);
-                }
-                if (moveRate < 0) {
-                    moveRate += Math.abs(moveRate * moveBrake);
-                }
-            }
-            moveX = (Math.abs((carX + cos(ang) * radius / radMulti)) - carX) * moveRate;
-            moveY = (Math.abs((carY + sin(ang) * radius / radMulti)) - carY) * moveRate;
-            carX += Number(moveX.toFixed(2));
-            carY += Number(moveY.toFixed(2));
             //------------------------------------------------------------------------------
             background(220); //Display
 
             if (courseSelect === 0) {
+                if (quickTrigger) {
+                    carX = 115;
+                    carY = 232;
+                    ang = 4.8;
+                    quickTrigger = false;
+                }
                 course.showA();
                 course.collisionA();
             }
@@ -139,8 +218,21 @@
             stroke(255, 10, 10);
             point(carX + cos(ang) * radius / radMulti, carY + sin(ang) * radius / radMulti);
 
-            document.getElementById('dump').innerHTML = keys + "<br>" + turnRate.toFixed(2) + "<br>" + moveRate.toFixed(
-                2) + "<br>" + Math.floor(ang);
+            d.getElementById('dump').innerHTML = carX + "<br>" + carY + "<br>" + turnRate.toFixed(2) + "<br>" +
+                moveRate.toFixed(
+                    2) + "<br>" + Math.floor(ang) + "<br>" + course.cpHitA + "<br>" + lap + "/" + lapMax;
+        }
+
+        function mousePressed() {
+            if (mouseButton === LEFT) {
+                if (!(isCourseStart) && lap !== lapMax) {
+                    isCourseStart = true;
+                } else if (isCourseStart && lap === lapMax) {
+                    isCourseStart = false;
+                    lap = 0;
+                    quickTrigger = true;
+                }
+            }
         }
 
         function keyPressed() {
@@ -211,6 +303,9 @@
                 322, 322, 319, 321, 319, 312, 297, 286, 270, 253, 231, 221, 205, 187
 
             ];
+            this.coordStart = [61, 178, 188, 200];
+            this.coordCPA = [641, 800, 233, 258];
+            this.cpHitA = 0;
             this.showA = function () {
                 noFill();
                 strokeWeight(10);
@@ -222,6 +317,19 @@
                 beginShape();
                 for (var ii = 0; ii < this.coordAB.length / 2; ii++) {
                     vertex(this.coordAB[ii], this.coordAB[ii + this.coordAB.length / 2]);
+                }
+                endShape(CLOSE);
+                strokeWeight(2);
+                stroke(0, 255, 20);
+                beginShape();
+                for (var iii = 0; iii < this.coordStart.length / 2; iii++) {
+                    vertex(this.coordStart[iii], this.coordStart[iii + this.coordStart.length / 2]);
+                }
+                endShape(CLOSE);
+                stroke(255, 160, 10);
+                beginShape();
+                for (var iv = 0; iv < this.coordCPA.length / 2; iv++) {
+                    vertex(this.coordCPA[iv], this.coordCPA[iv + this.coordCPA.length / 2]);
                 }
                 endShape(CLOSE);
             }
@@ -347,6 +455,23 @@
                         }
                     }
                 }
+                for (var iii = 0; iii < 1; iii++) {
+                    var pass = collideLineCircle(this.coordStart[iii], this.coordStart[iii + this.coordStart
+                        .length / 2], this.coordStart[iii + 1], this.coordStart[iii + this.coordStart
+                        .length / 2 + 1], carX, carY, carW);
+                    if (this.cpHitA === 1 && pass && lap < lapMax) {
+                        this.cpHitA = 0;
+                        lap++;
+                    }
+                }
+                for (var iv = 0; iv < 1; iv++) {
+                    var pass = collideLineCircle(this.coordCPA[iv], this.coordCPA[iv + this.coordCPA.length / 2],
+                        this.coordCPA[iv + 1], this.coordCPA[iv + this.coordCPA.length / 2 + 1], carX, carY,
+                        carW);
+                    if (this.cpHitA === 0 && pass && lap < lapMax) {
+                        this.cpHitA++;
+                    }
+                }
             }
             /*--------------------COURSE A---------------------*/
         }
@@ -399,12 +524,18 @@
             left: 0;
             top: 0;
         }
+
+        #time {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
     </style>
 </head>
 
 <body onkeydown="exitFuncD(event)" onkeyup="exitFuncU(event)">
     <p id="dump"></p>
-    <p id="coord"></p>
+    <p id="time"></p>
 </body>
 
 </html>
