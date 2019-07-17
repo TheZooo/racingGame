@@ -6,13 +6,14 @@
     <script>
         var w = window.innerWidth;
         var h = window.innerHeight;
-        var carX = 200;
-        var carY = 200;
+        var carX = 100;
+        var carY = 100;
         var carW = 5;
         var carH = 5;
         //---------------------
         var movementChng = 0.01;
         var moveDegrade = 0.23;
+        var moveBrake = 0.25;
         var moveX = 0;
         var moveY = 0;
         var moveRate = 0;
@@ -22,6 +23,7 @@
         var moveIncMax = 5;
         //----------------------
         var radius = 50;
+        var radMulti = 2;
         var ang = 0;
         //----------------------
         var turnChng = 0.01;
@@ -31,7 +33,10 @@
         var turnRateMin = -0.05;
         var turnInc = 0;
         var turnIncMax = 2;
-        var keys = [false, false, false, false]; //LEFT, UP, RIGHT, DOWN
+        var keys = [false, false, false, false, false]; //LEFT, UP, RIGHT, DOWN
+        //----------------------
+        var courseSelect = 0;
+        var isHelperActive = true;
         //----------------------
         var course = new course();
 
@@ -66,6 +71,11 @@
                 }
             }
             ang += Number(turnRate.toFixed(2));
+            if (ang > 6.2) {
+                ang = 0;
+            } else if (ang < 0) {
+                ang = 6.2;
+            }
             //------------------------------------------------------------------------------
             if (keys[1] || keys[3]) { //MOVING MECHINISM
                 if (moveInc >= moveIncMax) {
@@ -92,32 +102,45 @@
                     moveInc++;
                 }
             }
-            moveX = (Math.abs((carX + cos(ang) * radius / 2)) - carX) * moveRate;
-            moveY = (Math.abs((carY + sin(ang) * radius / 2)) - carY) * moveRate;
+            if (keys[4]) {
+                if (moveRate > 0) {
+                    moveRate -= Math.abs(moveRate * moveBrake);
+                }
+                if (moveRate < 0) {
+                    moveRate += Math.abs(moveRate * moveBrake);
+                }
+            }
+            moveX = (Math.abs((carX + cos(ang) * radius / radMulti)) - carX) * moveRate;
+            moveY = (Math.abs((carY + sin(ang) * radius / radMulti)) - carY) * moveRate;
             carX += Number(moveX.toFixed(2));
             carY += Number(moveY.toFixed(2));
             //------------------------------------------------------------------------------
-            background(220);
+            background(220); //Display
 
-            course.showA();
-            course.collisionA();
+            if (courseSelect === 0) {
+                course.showA();
+                course.collisionA();
+            }
 
             fill(255, 10, 10);
             stroke(0);
             strokeWeight(1);
             ellipse(carX, carY, carW, carH);
 
-            noFill();
-            ellipse(carX, carY, radius);
+            if (isHelperActive) {
+                noFill();
+                ellipse(carX, carY, radius);
+            }
 
             stroke(0, 0, 0, 50);
-            line(carX, carY, carX + cos(ang) * radius / 2, carY + sin(ang) * radius / 2);
+            line(carX, carY, carX + cos(ang) * radius / radMulti, carY + sin(ang) * radius / radMulti);
 
             strokeWeight(3);
             stroke(255, 10, 10);
-            point(carX + cos(ang) * radius / 2, carY + sin(ang) * radius / 2);
+            point(carX + cos(ang) * radius / radMulti, carY + sin(ang) * radius / radMulti);
 
-            document.getElementById('dump').innerHTML = keys + " " + turnRate + " " + moveRate;
+            document.getElementById('dump').innerHTML = keys + "<br>" + turnRate.toFixed(2) + "<br>" + moveRate.toFixed(
+                2) + "<br>" + Math.floor(ang);
         }
 
         function keyPressed() {
@@ -137,6 +160,16 @@
                 keys[1] = false;
                 keys[3] = true;
             }
+            if (keyCode === 32) { //Space
+                keys[4] = true;
+            }
+            if (keyCode === 79) {
+                if (isHelperActive) {
+                    isHelperActive = false;
+                } else if (!(isHelperActive)) {
+                    isHelperActive = true;
+                }
+            }
         }
 
         function keyReleased() {
@@ -152,27 +185,31 @@
             if (keyCode === 83) { //Down
                 keys[3] = false;
             }
+            if (keyCode === 32) { //Space
+                keys[4] = false;
+            }
         }
 
         function course() {
-            /*
-            NOTE: ADJACENT X COORDINATES MUST NOT BE THE SAME
-            The equation used will make 0/y and will show up as NaN
-            */
+            /*NOTE: ADJACENT X COORDINATES MUST NOT BE THE SAME; The equation used will make 0/y and will show up as NaN*/
             this.linePos = [];
             this.dotStrokeWeight = 10;
             this.borderPadding = 10;
-            /*
-            --------------------COURSE A---------------------
-            */
-            this.coordAA = [118, 185, 331, 554, 799, 976, 1183, 1283, 1384, 1420, 1444, 1445, 1419, 1328, 1119, 765,
-                477,
-                301, 138, 108, 94,
-                130, 77, 68, 69, 67, 72, 80, 74, 93, 178, 318, 509, 650, 686, 685, 684, 674, 660, 603, 444, 258
+            this.col = [false, false, false, false]; //Above, Below, Left, Right
+            /*--------------------COURSE A---------------------*/
+            this.coordAA = [68, 84, 120, 221, 318, 417, 532, 624, 684, 732, 763, 788, 800, 796, 802, 781, 756, 705, 636,
+                537, 434, 370, 295, 220, 164, 113, 84, 72, 54, 61, 56, 55, 59, 59, 50, 49, 47, 54, 51, 50, 54, 56,
+                59, 74, 112, 165, 218, 293, 369, 398, 419, 436, 442, 442, 437, 432, 429, 419, 402, 359, 311, 259,
+                188, 141, 103, 73
             ];
-            this.colA = [false, false, false, false]; //Above, Below, Left, Right
-            this.coordAB = [308, 372, 509, 707, 865, 1084, 1144, 1185, 1149, 1003, 757, 554, 411, 348, 238, 190, 192,
-                194, 190, 186, 262, 351, 487, 509, 514, 502, 458, 394
+            this.coordAB = [178, 182, 186, 194, 204, 220, 239, 267, 300, 327, 349, 374, 396, 414, 432, 451, 476, 492,
+                504, 529, 542, 558, 576, 586, 600, 607, 619, 629, 633, 640, 644, 648, 647, 648, 645, 644, 645, 644,
+                641, 640, 645, 646, 645, 640, 632, 620, 600, 544, 520, 500, 468, 435, 368, 347, 319, 275, 252, 235,
+                212, 205, 189, 181, 178, 176, 178, 173, 157, 148, 145, 140, 138, 136, 136, 137, 134, 132, 133, 132,
+                133, 131, 131, 134, 137, 137, 137, 134, 131, 128, 128, 130, 136, 136, 137, 136, 138, 144, 148, 158,
+                168, 189, 204, 214, 223, 233, 243, 258, 267, 285, 295, 301, 309, 314, 321, 324, 325, 325, 326, 326,
+                322, 322, 319, 321, 319, 312, 297, 286, 270, 253, 231, 221, 205, 187
+
             ];
             this.showA = function () {
                 noFill();
@@ -194,10 +231,12 @@
                 ]; //Above, below, left, right every 4 sets
                 stroke(0, 0, 0, 80);
                 strokeWeight(1);
-                for (var n = 0; n <= this.linePos.length; n += 4) { //Line Display
-                    line(this.linePos[n - 4], this.linePos[n - 3], this.linePos[n - 2], this.linePos[n - 1]);
+                if (isHelperActive) {
+                    for (var n = 0; n <= this.linePos.length; n += 4) { //Line Display
+                        line(this.linePos[n - 4], this.linePos[n - 3], this.linePos[n - 2], this.linePos[n - 1]);
+                    }
                 }
-                //------------------
+                //------------------CoordAA
                 for (var i = 0; i < this.coordAA.length / 2; i++) { //Goes through coordinates in coordAA
                     var fix = 1;
                     var directNum = -1;
@@ -206,7 +245,7 @@
                     }
                     for (var hj = 0; hj <= this.linePos.length; hj +=
                         4) { //Goes through four direction collision for a particular coordAA Line
-                        this.colA[directNum] = collideLineLine(this.linePos[hj - 4], this.linePos[hj - 3], this
+                        this.col[directNum] = collideLineLine(this.linePos[hj - 4], this.linePos[hj - 3], this
                             .linePos[hj - 2], this.linePos[hj - 1], this.coordAA[i], this.coordAA[i + this
                                 .coordAA
                                 .length / 2], this.coordAA[i + fix], this.coordAA[i + this.coordAA.length / 2 +
@@ -214,41 +253,45 @@
                         directNum++;
                     }
                     if (moveRate > 0.0001 || moveRate < -0.0001) {
-                        if (this.colA[0] || this.colA[1]) { //Quik Maff (Working as intended)
+                        if (this.col[0] || this.col[1]) { //Quik Maff (Working as intended)
                             var mY = (this.coordAA[i + this.coordAA.length / 2 + fix] - this.coordAA[i + this
                                 .coordAA
                                 .length / 2]) / (this.coordAA[i + fix] - this.coordAA[i]);
                             var bY = this.coordAA[i + this.coordAA.length / 2] - (mY * this.coordAA[i]);
                             var xY = Math.floor(carX); //x can be whatever, its undefined slope
                             var yY = (mY * xY) + bY;
-                            strokeWeight(this.dotStrokeWeight);
-                            point(xY, yY);
-                            if (carY - this.borderPadding - moveRate < yY && this.colA[0] && !(this.colA[1])) {
+                            if (isHelperActive) {
+                                strokeWeight(this.dotStrokeWeight);
+                                point(xY, yY);
+                            }
+                            if (carY - this.borderPadding - moveRate < yY && this.col[0] && !(this.col[1])) {
                                 carY = yY + this.borderPadding;
-                            } else if (carY + this.borderPadding + moveRate > yY && this.colA[1] && !(this.colA[
-                                0])) {
+                            } else if (carY + this.borderPadding + moveRate > yY && this.col[1] && !(this.col[
+                                    0])) {
                                 carY = yY - this.borderPadding;
                             }
                         }
-                        if (this.colA[2] || this.colA[3]) {
+                        if (this.col[2] || this.col[3]) {
                             var mX = (this.coordAA[i + this.coordAA.length / 2 + fix] - this.coordAA[i + this
                                 .coordAA
                                 .length / 2]) / (this.coordAA[i + fix] - this.coordAA[i]);
                             var bX = this.coordAA[i + this.coordAA.length / 2] - (mX * this.coordAA[i]);
                             var xX = (carY - bX) / mX; //Finding X using Algaebrah
                             var yX = (mX * xX) + bX;
-                            strokeWeight(this.dotStrokeWeight);
-                            point(xX, yX);
-                            if (carX - this.borderPadding - moveRate < xX && this.colA[2] && !(this.colA[3])) {
+                            if (isHelperActive) {
+                                strokeWeight(this.dotStrokeWeight);
+                                point(xX, yX);
+                            }
+                            if (carX - this.borderPadding - moveRate < xX && this.col[2] && !(this.col[3])) {
                                 carX = xX + this.borderPadding;
-                            } else if (carX + this.borderPadding + moveRate > xX && this.colA[3] && !(this.colA[
-                                2])) {
+                            } else if (carX + this.borderPadding + moveRate > xX && this.col[3] && !(this.col[
+                                    2])) {
                                 carX = xX - this.borderPadding;
                             }
                         }
                     }
                 }
-                //---------------------
+                //---------------------CoordAB
                 for (var ii = 0; ii < this.coordAB.length / 2; ii++) {
                     var fix = 1;
                     var directNum = -1;
@@ -257,7 +300,7 @@
                     }
                     for (var mj = 0; mj <= this.linePos.length; mj +=
                         4) { //Goes through four direction collision for a particular coordAB Line
-                        this.colA[directNum] = collideLineLine(this.linePos[mj - 4], this.linePos[mj - 3], this
+                        this.col[directNum] = collideLineLine(this.linePos[mj - 4], this.linePos[mj - 3], this
                             .linePos[mj - 2], this.linePos[mj - 1], this.coordAB[ii], this.coordAB[ii + this
                                 .coordAB
                                 .length / 2], this.coordAB[ii + fix], this.coordAB[ii + this.coordAB.length /
@@ -266,44 +309,46 @@
                         directNum++;
                     }
                     if (moveRate > 0.0001 || moveRate < -0.0001) {
-                        if (this.colA[0] || this.colA[1]) { //Quik Maff (Working as intended)
+                        if (this.col[0] || this.col[1]) { //Quik Maff (Working as intended)
                             var mY = (this.coordAB[ii + this.coordAB.length / 2 + fix] - this.coordAB[ii + this
                                 .coordAB
                                 .length / 2]) / (this.coordAB[ii + fix] - this.coordAB[ii]);
                             var bY = this.coordAB[ii + this.coordAB.length / 2] - (mY * this.coordAB[ii]);
                             var xY = Math.floor(carX); //x can be whatever, its undefined slope
                             var yY = (mY * xY) + bY;
-                            strokeWeight(this.dotStrokeWeight);
-                            point(xY, yY);
-                            if (carY - this.borderPadding - moveRate < yY && this.colA[0] && !(this.colA[1])) {
+                            if (isHelperActive) {
+                                strokeWeight(this.dotStrokeWeight);
+                                point(xY, yY);
+                            }
+                            if (carY - this.borderPadding - moveRate < yY && this.col[0] && !(this.col[1])) {
                                 carY = yY + this.borderPadding;
-                            } else if (carY + this.borderPadding + moveRate > yY && this.colA[1] && !(this.colA[
-                                0])) {
+                            } else if (carY + this.borderPadding + moveRate > yY && this.col[1] && !(this.col[
+                                    0])) {
                                 carY = yY - this.borderPadding;
                             }
                         }
-                        if (this.colA[2] || this.colA[3]) {
+                        if (this.col[2] || this.col[3]) {
                             var mX = (this.coordAB[ii + this.coordAB.length / 2 + fix] - this.coordAB[ii + this
                                 .coordAB
                                 .length / 2]) / (this.coordAB[ii + fix] - this.coordAB[ii]);
                             var bX = this.coordAB[ii + this.coordAB.length / 2] - (mX * this.coordAB[ii]);
                             var xX = (carY - bX) / mX; //Finding X using Algaebrah
                             var yX = (mX * xX) + bX;
-                            strokeWeight(this.dotStrokeWeight);
-                            point(xX, yX);
-                            if (carX - this.borderPadding - moveRate < xX && this.colA[2] && !(this.colA[3])) {
+                            if (isHelperActive) {
+                                strokeWeight(this.dotStrokeWeight);
+                                point(xX, yX);
+                            }
+                            if (carX - this.borderPadding - moveRate < xX && this.col[2] && !(this.col[3])) {
                                 carX = xX + this.borderPadding;
-                            } else if (carX + this.borderPadding + moveRate > xX && this.colA[3] && !(this.colA[
-                                2])) {
+                            } else if (carX + this.borderPadding + moveRate > xX && this.col[3] && !(this.col[
+                                    2])) {
                                 carX = xX - this.borderPadding;
                             }
                         }
                     }
                 }
             }
-            /*
-            --------------------COURSE A---------------------
-            */
+            /*--------------------COURSE A---------------------*/
         }
 
 
