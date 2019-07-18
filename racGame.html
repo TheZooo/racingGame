@@ -12,6 +12,12 @@
         var carY = 50;
         var carW = 5;
         var carH = 5;
+        var trailX = [];
+        var trailY = [];
+        var trailAmt = 6;
+        var trailInc = [];
+        var trailIncMax = 1;
+        var countrr = 0;
         //---------------------
         var movementChng = 0.01;
         var moveDegrade = 0.23;
@@ -62,6 +68,9 @@
 
         function setup() {
             createCanvas(w, h);
+            for (var i = 0; i < trailAmt; i++) {
+                trailInc.push(0);
+            }
         }
 
         function draw() {
@@ -190,7 +199,31 @@
             }
             //------------------------------------------------------------------------------
             background(220); //Display
-
+            noStroke();
+            fill(255, 10, 10, 100);
+            if (countrr > trailAmt) {
+                countrr = 0;
+            }
+            for (var mnm = 0; mnm < trailAmt; mnm++) {
+                if (trailInc[mnm] >= trailIncMax) {
+                    trailX.unshift(carX);
+                    trailY.unshift(carY);
+                    trailInc[mnm] = 0;
+                } else if (trailInc[mnm] < trailIncMax) {
+                    if (mnm === countrr) {
+                        trailInc[countrr]++;
+                    }
+                }
+            }
+            countrr++;
+            if (trailX.length > trailAmt || trailY.length > trailAmt) {
+                trailX.pop();
+                trailY.pop();
+            }
+            for (var nmn = 0; nmn < trailAmt; nmn++) {
+                ellipse(trailX[nmn], trailY[nmn], carW, carH);
+            }
+            stroke(255, 10, 10);
             if (courseSelect === 0) {
                 if (quickTrigger) {
                     carX = 115;
