@@ -1,2 +1,3 @@
--If you hit an obtuse angled wall, the collision detection may push you back double than usual due to two points being hit
--Some angled walls that have two collision points (shown by dots) may stop the car from moving
+-If you hit an obtuse angled wall, the collision detection may push you back double than usual due to two points being hit (Enough to clip through collision)
+-Acute or <135 degree angled walls that have two collision points (shown by dots) may stop the car from moving
+-Speed may go slightly faster than the max due to collisions
